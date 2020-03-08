@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string.h>
+
+
+#define clear() printf("\033[H\033[J") 
+
+void init_shell() 
+{ 
+	clear(); 
+	printf("Universidad Santo Tomas \n");
+    printf("Practica de Laboratorio 01. Sistemas Digitales III\n");
+    printf("Worm: Interprete de comandos personalizados \n");
+    printf("By. Juan Esteban Hernandez");    
+	printf("\n"); 
+}
+void read_command( char cmd[], char *par[])
+{
+    char line [1024];
+    int count = 0, i=0, j=0;
+    char *array[100], *pch;
+
+    // Read
+
+    for(;;)
+    {
+        int c = fgetc( stdin );
+        line[count++] = (char) c;
+        if(c == '\n') {
+        break;
+        }
+    }
+    if ( count == 1) return;
+    pch = strtok( line, "\n");
+
+    while (pch != NULL) {
+
+        array[i++] = strdup(pch);
+        pch = strtok(NULL, " \n");
+    }
+
+    strcpy(cmd,array[0]);
+
+    for ( int j = 0; j< i; j++)
+    par[j] = array[j];
+    par[i] = NULL;
+
+}
+void type_promp()
+{
+    static int first_time = 1;
+
+    if(first_time){
+        const char* CLEAR_SCREEN_ANSI = " \e[1;1H\e[2J";
+        write(STDOUT_FILENO,CLEAR_SCREEN_ANSI,12 );
+        first_time = 0;
+    }
+    printf("worm> ");
+}
+int main()
+{
+    char cmd[100], command[100], *parameters[20];
+
+    char *envp[] = {(char *) "PATH/bin", 0 };
+
+
+    init_shell();
+
+    while(1)
+    {
+
+        // Promp Configuration
+        type_promp();
+        // Reading and send of commands and parameters
+        read_command (command,parameters);
+        // Look for child processes on process 
+        if(fork() != 0)
+        wait(NULL);
+
+        // Buffer Command load on process
+            if(strcmp( command, "vars") == 0 )
+            {
+
+            printf("vars\n");
+
+            }  
+        // 
+            // Finish Program
+
+            if(strcmp( command, "exit") == 0)
+            {
+                exit(0);
+            }
+            // 
+    }
+    return 0;
+} 
